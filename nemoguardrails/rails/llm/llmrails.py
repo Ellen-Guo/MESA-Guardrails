@@ -19,7 +19,7 @@ import logging
 import os
 from typing import List, Optional
 
-from langchain.llms import BaseLLM, OpenAI
+from langchain.llms import BaseLLM, OpenAI, AzureOpenAI
 
 from nemoguardrails.actions.llm.generation import LLMGenerationActions
 from nemoguardrails.actions.llm.utils import get_colang_history
@@ -84,6 +84,12 @@ class LLMRails:
 
         if main_llm_config.engine == "openai":
             self.llm = OpenAI(model_name=main_llm_config.model, temperature=0.1)
+        elif main_llm_config.engine == "azure":
+            self.llm = AzureOpenAI(
+                deployment_name=main_llm_config.deployment, 
+                model_name=main_llm_config.model, 
+                temperature=0.1
+            )
         else:
             raise Exception(f"Unknown LLM engine: {main_llm_config.engine}")
 

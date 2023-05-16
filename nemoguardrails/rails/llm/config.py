@@ -32,12 +32,14 @@ class Model(BaseModel):
     {
         "type": "main",
         "engine": "openai",
+        "deployment": "azure model deployment name",
         "model": "text-davinci-003"
     }
     """
 
     type: str
     engine: str
+    deployment: Optional[str]
     model: str
 
 

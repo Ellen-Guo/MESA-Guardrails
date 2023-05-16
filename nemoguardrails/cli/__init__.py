@@ -47,6 +47,27 @@ def _check_if_llm_provider_is_configured():
         )
         raise typer.Exit(1)
 
+    # Azure OpenAI configurations
+    if os.environ.get("OPENAI_API_TYPE") == "azure":
+        if not os.environ.get("OPENAI_API_VERSION"):
+            typer.secho(
+                "Please set the OPENAI_API_VERSION environment variable with the api version.",
+                fg=typer.colors.RED,
+            )
+            raise typer.Exit(1)
+        if not os.environ.get("OPENAI_API_BASE"):
+            typer.secho(
+                "Please set the OPENAI_API_BASE environment variable to your azure api base.",
+                fg=typer.colors.RED,
+            )
+            raise typer.Exit(1)
+        if os.environ.get("OPENAI_API_KEY")[0:3] == "sk-":
+            typer.secho(
+                "Please set the OPENAI_API_KEY environment variable to your azure api key.",
+                fg=typer.colors.RED,
+            )
+            raise typer.Exit(1)
+
 
 @app.command()
 def chat(
