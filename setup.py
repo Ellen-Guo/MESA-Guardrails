@@ -14,19 +14,21 @@
 # limitations under the License.
 
 
-"""Install, build and package the `nemoguardrails` package."""
+"""Install, build and package the `mesaguardrails` package."""
 
 from setuptools import find_packages, setup
 
 setup(
-    name="nemoguardrails",
+    name="mesaguardrails",
     version="0.1.0",
     packages=find_packages(),
-    author="NVIDIA",
-    author_email="nemoguardrails@nvidia.com",
-    description="NeMo Guardrails is an open-source toolkit for easily adding "
-    "programmable guardrails to LLM-based conversational systems.",
-    long_description="""NeMo Guardrails is an open-source toolkit for easily adding
+    author="ManTech",
+    author_email="mesaguardrails@mantech.com",
+    description="MESA Guardrails builds on top of NeMo Guardrails, which is an open-source toolkit for easily adding "
+    "programmable guardrails to LLM-based conversational systems."
+    "Some added features include the ability to use Azure OpenAI as the guardrails LLM",
+    long_description="""MESA Guardrails builds on top of NeMo Guardrails with the added capability of using Azure OpenAI as the guardrails LLM.
+    NeMo Guardrails is an open-source toolkit for easily adding
     programmable guardrails to LLM-based conversational systems.
     Guardrails (or "rails" for short) are specific ways of controlling the output of an LLM,
     e.g., not talking about politics, responding in a particular way to specific user
@@ -43,7 +45,7 @@ setup(
     all the challenges. NeMo Guardrails provides the ability to connect your codebase or
     services to your chatbot seamlessly and securely!""",
     long_description_content_type="text/markdown",
-    url="https://github.com/NVIDIA/NeMo-Guardrails",
+    url="https://github.com/Ellen-Guo/MESA-Guardrails",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
