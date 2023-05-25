@@ -17,6 +17,7 @@
 
 import logging
 import random
+import time
 import sys
 from functools import lru_cache
 from typing import List
@@ -43,6 +44,7 @@ from nemoguardrails.kb.index import IndexItem
 from nemoguardrails.kb.kb import KnowledgeBase
 from nemoguardrails.llm.prompts.prompts import Step, get_prompt
 from nemoguardrails.rails.llm.config import RailsConfig
+from nemoguardrails.logging import MESALog
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +70,11 @@ class LLMGenerationActions:
         # If we have documents, we'll also initialize a knowledge base.
         self.kb = None
         self._init_kb()
+
+        # Logging user input, bot output and history
+        self.log = MESALog(db_name="aiassistant", collect_name="guardrails")
+        self.start_time = None
+        self.user_input = None
 
     def _init_user_message_index(self):
         """Initializes the index of user messages."""
@@ -204,6 +211,7 @@ class LLMGenerationActions:
             #  or use the LLM to detect the canonical form. The below implementation
             #  is for the latter.
 
+            self.start_time = time.time()
             # Compute the conversation history
             history = get_colang_history(events)
 
@@ -231,6 +239,8 @@ class LLMGenerationActions:
                     self.config, Step.DETECT_USER_MESSAGE_CANONICAL_FORM
                 )["content"],
             )
+
+            self.user_input = event['content']
 
             # Create and run the general chain.
             chain = LLMChain(
@@ -436,6 +446,7 @@ class LLMGenerationActions:
                 "sample_conversation_two_turns": self._get_sample_conversation_two_turns(),
             }
             bot_message_prompt_string = bot_message_prompt.format(**prompt_inputs)
+
             # Context variable starting with "_" are considered private (not used in tests or logging)
             context_updates["_last_bot_prompt"] = bot_message_prompt_string
 
@@ -444,6 +455,16 @@ class LLMGenerationActions:
             )
             # TODO: catch openai.error.InvalidRequestError from exceeding max token length
             result = await chain.apredict(**prompt_inputs)
+
+            # MESA log NeMo Guardrails Chain
+            self.log(
+                username="Nemo Guardrails",
+                timestamp=time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), 
+                duration= (time.time() - self.start_time), 
+                chain_history=history, 
+                user_input=self.user_input, 
+                bot_output=result
+            )
 
             if self.verbose:
                 print_completion(result)
