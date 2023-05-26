@@ -22,12 +22,17 @@ class MESALog():
         self.collection_ref = self.client[db_name][collect_name]
 
     def insert_db(self, username, timestamp, duration, user_input, chain_history, bot_output):
+        blocked = False
+        bot_action = chain_history.strip().split('\n')[-1]
+        if bot_action == 'bot inform cannot respond':
+            blocked = True
         dictionary = {
             "username": username,
             "timestamp": timestamp,
             "duration": duration,
             "input": user_input,
             "history": chain_history,
+            "blocked": blocked,
             "response": bot_output
         }
         self.collection_ref.insert_one()
