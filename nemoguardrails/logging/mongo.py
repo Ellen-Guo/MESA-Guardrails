@@ -8,10 +8,10 @@ MONGODB_PORT = os.environ.get("MONGODB_PORT", 27017)
 MONGODB_USER = os.environ.get("MONGODB_USER")
 MONGODB_PASSWORD = os.environ.get("MONGODB_PASSWORD")
 
-# TODO: items to log -- username, date and time, user input, chain history, bot output/response
+# TODO: Determine where the defined rails are called and used
 
 class MESALog():
-    def init(self, db_name: str, collect_name: str):
+    def __init__(self, db_name: str, collect_name: str):
         self.client = pymongo.MongoClient(
             host=MONGODB_HOST,
             port=MONGODB_PORT,
@@ -21,7 +21,7 @@ class MESALog():
         self.db_ref = self.client[db_name]
         self.collection_ref = self.client[db_name][collect_name]
 
-    def insert_db(self, username, timestamp, duration, user_input, chain_history, bot_output):
+    def insert_db(self, username, timestamp, duration, user_input, chain_history, bot_output, method):
         blocked = False
         bot_action = chain_history.strip().split('\n')[-1]
         if bot_action == 'bot inform cannot respond':
@@ -33,7 +33,8 @@ class MESALog():
             "input": user_input,
             "history": chain_history,
             "blocked": blocked,
-            "response": bot_output
+            "response": bot_output,
+            "completion_method": method
         }
-        self.collection_ref.insert_one()
+        self.collection_ref.insert_one(dictionary)
     

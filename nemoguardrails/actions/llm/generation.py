@@ -44,7 +44,7 @@ from nemoguardrails.kb.index import IndexItem
 from nemoguardrails.kb.kb import KnowledgeBase
 from nemoguardrails.llm.prompts.prompts import Step, get_prompt
 from nemoguardrails.rails.llm.config import RailsConfig
-from nemoguardrails.logging import MESALog
+from nemoguardrails.logging.mongo import MESALog
 
 log = logging.getLogger(__name__)
 
@@ -391,6 +391,7 @@ class LLMGenerationActions:
         assert event["type"] == "bot_intent"
         bot_intent = event["intent"]
         context_updates = {}
+        history = get_colang_history(events, remove_retrieval_events=True)
 
         if bot_intent in self.config.bot_messages:
             # Choose a message randomly from self.config.bot_messages[bot_message]
@@ -399,15 +400,34 @@ class LLMGenerationActions:
                 bot_utterance = self.config.bot_messages[bot_intent][0]
             else:
                 bot_utterance = random.choice(self.config.bot_messages[bot_intent])
-
+            # MESA log NeMo Guardrails Chain
+            self.log.insert_db(
+                username="Nemo Guardrails",
+                timestamp=time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), 
+                duration= (time.time() - self.start_time), 
+                chain_history=history, 
+                user_input=self.user_input, 
+                bot_output=bot_utterance,
+                method="rails"
+            )
             log.info("Found existing bot message: " + bot_utterance)
 
         # Check if the output is supposed to be the content of a context variable
         elif bot_intent[0] == "$" and bot_intent[1:] in context:
             bot_utterance = context[bot_intent[1:]]
 
+            # MESA log NeMo Guardrails Chain
+            self.log.insert_db(
+                username="Nemo Guardrails",
+                timestamp=time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), 
+                duration= (time.time() - self.start_time), 
+                chain_history=history, 
+                user_input=self.user_input, 
+                bot_output=bot_utterance,
+                method="context"
+            )
+
         else:
-            history = get_colang_history(events, remove_retrieval_events=True)
             # We search for the most relevant similar bot utterance
             examples = ""
             if self.bot_message_index:
@@ -457,13 +477,14 @@ class LLMGenerationActions:
             result = await chain.apredict(**prompt_inputs)
 
             # MESA log NeMo Guardrails Chain
-            self.log(
+            self.log.insert_db(
                 username="Nemo Guardrails",
                 timestamp=time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), 
                 duration= (time.time() - self.start_time), 
                 chain_history=history, 
                 user_input=self.user_input, 
-                bot_output=result
+                bot_output=bot_utterance,
+                method="llm"
             )
 
             if self.verbose:
@@ -482,6 +503,16 @@ class LLMGenerationActions:
                 context_updates=context_updates,
             )
         else:
+            # MESA log NeMo Guardrails Chain
+            self.log.insert_db(
+                username="Nemo Guardrails",
+                timestamp=time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), 
+                duration= (time.time() - self.start_time), 
+                chain_history=history, 
+                user_input=self.user_input, 
+                bot_output="I'm not sure what to say."
+                method="none"
+            )
             return ActionResult(
                 events=[{"type": "bot_said", "content": "I'm not sure what to say."}],
                 context_updates=context_updates,
