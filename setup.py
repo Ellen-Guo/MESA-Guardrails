@@ -71,7 +71,7 @@ setup(
         "pydantic==1.10.6",
         "aiohttp==3.8.4",
         "langchain==0.0.157",
-        "requests==2.28.2",
+        "requests==2.27.1",
         "typer==0.7.0",
         "PyYAML~=6.0",
         "setuptools~=65.5.1",
@@ -82,5 +82,6 @@ setup(
         "uvicorn==0.21.1",
         "httpx==0.23.3",
         "simpleeval==0.9.13",
+        "pymongo==4.3.3"
     ],
 )

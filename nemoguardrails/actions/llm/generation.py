@@ -510,7 +510,7 @@ class LLMGenerationActions:
                 duration= (time.time() - self.start_time), 
                 chain_history=history, 
                 user_input=self.user_input, 
-                bot_output="I'm not sure what to say."
+                bot_output="I'm not sure what to say.",
                 method="none"
             )
             return ActionResult(
