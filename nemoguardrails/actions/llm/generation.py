@@ -476,6 +476,14 @@ class LLMGenerationActions:
             # TODO: catch openai.error.InvalidRequestError from exceeding max token length
             result = await chain.apredict(**prompt_inputs)
 
+            if self.verbose:
+                print_completion(result)
+
+            result = get_multiline_response(result)
+            result = strip_quotes(result)
+
+            bot_utterance = result
+
             # MESA log NeMo Guardrails Chain
             self.log.insert_db(
                 username="Nemo Guardrails",
@@ -486,14 +494,6 @@ class LLMGenerationActions:
                 bot_output=bot_utterance,
                 method="llm"
             )
-
-            if self.verbose:
-                print_completion(result)
-
-            result = get_multiline_response(result)
-            result = strip_quotes(result)
-
-            bot_utterance = result
 
             log.info(f"Generated bot message: {bot_utterance}")
 
